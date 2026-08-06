@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación - Emotion Campus</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/images/logo-emotion.jpeg" alt="Emotion">
+            e-motion
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="#">📚 Academia</a></li>
+            <li><a href="cursos.html" class="active">📖 Cursos</a></li>
+            <li><a href="#">📊 Evaluaciones</a></li>
+            <li><a href="#">🎓 Certificados</a></li>
+            <li><a href="#">👥 Usuarios</a></li>
+            <li><a href="#">📈 Reportes</a></li>
+        </ul>
+        <button class="btn-emotion-outline" id="btnLogout">Cerrar sesión</button>
+    </aside>
+    <main class="main-content">
+        <a href="#" id="volverCurso" class="back-link">← Volver al curso</a>
+        <div class="dashboard-header">
+            <div>
+                <h1 id="evalTitulo">Evaluación</h1>
+                <p>Responde todas las preguntas y presiona "Enviar" al final.</p>
+            </div>
+        </div>
+
+        <div id="quizContainer"></div>
+
+        <div id="resultadoBox" class="course-detail-box" style="display:none; margin-top:20px;">
+            <h3 id="resultadoTitulo"></h3>
+            <p id="resultadoTexto"></p>
+            <a href="cursos.html" class="btn-emotion" style="display:inline-block;text-decoration:none;max-width:220px;margin-top:15px;text-align:center;">Volver al catálogo</a>
+        </div>
+    </main>
+</div>
+
+<script>
+    if (localStorage.getItem("sesionActiva") !== "true") {
+        window.location.href = "index.html";
+    }
+    document.getElementById("btnLogout").addEventListener("click", () => {
+        localStorage.removeItem("sesionActiva");
+        localStorage.removeItem("usuarioEmail");
+        window.location.href = "index.html";
+    });
+
+    const evaluaciones = {
+        sst: {
+            titulo: "Evaluación: SST",
+            preguntas: [
+                {
+                    pregunta: "¿Qué norma establece las acciones de prevención y atención del acoso laboral y sexual que deben implementar las empresas?",
+                    opciones: ["Ley 100 de 1993", "Circular 026 de 2023", "Decreto 1072 de 2015"],
+                    correcta: 1
+                },
+                {
+                    pregunta: "¿Qué órgano es obligatorio en todas las empresas para atender casos de convivencia laboral?",
+                    opciones: ["Comité de Convivencia Laboral", "Junta Directiva", "Sindicato"],
+                    correcta: 0
+                },
+                {
+                    pregunta: "Según el artículo 210A del Código Penal, ¿qué pena puede tener el acoso sexual?",
+                    opciones: ["Solo una multa económica", "Prisión de uno a tres años", "Suspensión temporal del empleo"],
+                    correcta: 1
+                },
+                {
+                    pregunta: "¿Quién tiene el deber de dar asesoría y capacitación sobre prevención de acoso laboral y sexual?",
+                    opciones: ["La ARL a la que está afiliada la empresa", "Únicamente el Ministerio de Trabajo", "Cada empleado por su cuenta"],
+                    correcta: 0
+                }
+            ]
+        }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const evaluacion = evaluaciones[id];
+
+    document.getElementById("volverCurso").href = `curso.html?id=${id}`;
+
+    const container = document.getElementById("quizContainer");
+
+    if (evaluacion) {
+        document.getElementById("evalTitulo").textContent = evaluacion.titulo;
+
+        evaluacion.preguntas.forEach((p, index) => {
+            const box = document.createElement("div");
+            box.className = "course-detail-box";
+            box.style.marginBottom = "20px";
+
+            let opcionesHtml = "";
+            p.opciones.forEach((opcion, i) => {
+                opcionesHtml += `
+                    <label style="display:block; margin-bottom:10px; cursor:pointer;">
+                        <input type="radio" name="pregunta${index}" value="${i}" style="margin-right:8px;">
+                        ${opcion}
+                    </label>
+                `;
+            });
+
+            box.innerHTML = `
+                <h3>${index + 1}. ${p.pregunta}</h3>
+                <div style="margin-top:15px;">${opcionesHtml}</div>
+            `;
+            container.appendChild(box);
+        });
+
+        const btnEnviar = document.createElement("button");
+        btnEnviar.textContent = "Enviar evaluación";
+        btnEnviar.className = "btn-emotion";
+        btnEnviar.style.maxWidth = "220px";
+        btnEnviar.addEventListener("click", calificar);
+        container.appendChild(btnEnviar);
+
+    } else {
+        container.innerHTML = "<p>Esta evaluación aún no está disponible.</p>";
+    }
+
+    function calificar() {
+        let correctas = 0;
+
+        evaluacion.preguntas.forEach((p, index) => {
+            const seleccionada = document.querySelector(`input[name="pregunta${index}"]:checked`);
+            if (seleccionada && parseInt(seleccionada.value) === p.correcta) {
+                correctas++;
+            }
+        });
+
+        const total = evaluacion.preguntas.length;
+        const porcentaje = Math.round((correctas / total) * 100);
+        const aprobado = porcentaje >= 70;
+
+        const completados = JSON.parse(localStorage.getItem("cursosCompletados") || "{}");
+        completados[id] = { aprobado, porcentaje, fecha: new Date().toLocaleDateString() };
+        localStorage.setItem("cursosCompletados", JSON.stringify(completados));
+
+        container.style.display = "none";
+        const resultadoBox = document.getElementById("resultadoBox");
+        resultadoBox.style.display = "block";
+
+        document.getElementById("resultadoTitulo").textContent = aprobado
+            ? "✅ ¡Aprobaste!"
+            : "❌ No aprobaste";
+
+        document.getElementById("resultadoTexto").textContent =
+            `Obtuviste ${correctas} de ${total} respuestas correctas (${porcentaje}%). ${aprobado ? "El curso ha sido marcado como completado." : "Necesitas al menos 70% para aprobar. Puedes volver a intentarlo."}`;
+    }
+</script>
+</body>
+</html>

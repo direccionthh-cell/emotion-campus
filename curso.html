@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso - Emotion Campus</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/images/images/logo-emotion.jpeg" alt="Emotion">
+            e-motion
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html">🏠 Dashboard</a></li>
+            <li><a href="#">📚 Academia</a></li>
+            <li><a href="cursos.html" class="active">📖 Cursos</a></li>
+            <li><a href="#">📊 Evaluaciones</a></li>
+            <li><a href="#">🎓 Certificados</a></li>
+            <li><a href="#">👥 Usuarios</a></li>
+            <li><a href="#">📈 Reportes</a></li>
+        </ul>
+        <button class="btn-emotion-outline" id="btnLogout">Cerrar sesión</button>
+    </aside>
+    <main class="main-content">
+        <a href="cursos.html" class="back-link">← Volver al catálogo</a>
+        <div class="dashboard-header">
+            <div>
+                <h1 id="cursoTitulo">Cargando...</h1>
+                <p id="cursoDescripcion"></p>
+            </div>
+        </div>
+
+        <div class="course-detail-box">
+            <h3>Contenido del módulo</h3>
+            <ul id="cursoContenido"></ul>
+            <button class="btn-emotion" style="max-width:220px;margin-top:20px;" onclick="irAEvaluacion()">Iniciar curso</button>
+        </div>
+    </main>
+</div>
+<script>
+    if (localStorage.getItem("sesionActiva") !== "true") {
+        window.location.href = "index.html";
+    }
+    document.getElementById("btnLogout").addEventListener("click", () => {
+        localStorage.removeItem("sesionActiva");
+        localStorage.removeItem("usuarioEmail");
+        window.location.href = "index.html";
+    });
+
+    const cursos = {
+        th: {
+            titulo: "Talento Humano",
+            descripcion: "Procesos internos y políticas de personal.",
+            contenido: ["Políticas de contratación", "Bienestar laboral", "Evaluación de desempeño"]
+        },
+        calidad: {
+            titulo: "Calidad",
+            descripcion: "Procesos y estándares de calidad de la empresa.",
+            contenido: ["Sistema de Gestión de Calidad", "Indicadores de calidad", "Mejora continua"]
+        },
+        sst: {
+            titulo: "SST",
+            descripcion: "Seguridad y Salud en el Trabajo.",
+            contenido: ["Marco legal SST", "Prevención de accidentes", "Comité de Convivencia Laboral"]
+        },
+        etica: {
+            titulo: "Ética y Transparencia",
+            descripcion: "Código de ética y Programa de Transparencia Empresarial.",
+            contenido: ["Código de ética", "Conflictos de interés", "Canales de denuncia"]
+        },
+        sarlaft: {
+            titulo: "SARLAFT",
+            descripcion: "Sistema de Administración del Riesgo de LA/FT.",
+            contenido: ["¿Qué es el lavado de activos?", "Señales de alerta", "Reporte de operaciones sospechosas"]
+        },
+        datos: {
+            titulo: "Protección de Datos",
+            descripcion: "Manejo responsable de datos personales (Ley 1581).",
+            contenido: ["Principios de tratamiento de datos", "Derechos del titular", "Manejo seguro de la información"]
+        },
+        induccion: {
+            titulo: "Inducción Corporativa",
+            descripcion: "Bienvenida y primeros pasos para nuevos colaboradores.",
+            contenido: ["Historia de la empresa", "Valores corporativos", "Estructura organizacional"]
+        },
+        acoso: {
+            titulo: "Prevención del Acoso Sexual",
+            descripcion: "Identificación, prevención y ruta de atención del acoso sexual laboral.",
+            contenido: ["Definición legal (Art. 210A Código Penal)", "Circular 026 de 2023", "Comité de Convivencia Laboral", "Ruta de denuncia y confidencialidad"]
+        },
+        vial: {
+            titulo: "Seguridad Vial",
+            descripcion: "Normas de tránsito y prevención de accidentes viales.",
+            contenido: ["Normas básicas de tránsito", "Uso correcto del casco y cinturón", "Prevención de accidentes en desplazamientos laborales", "Protocolo en caso de accidente"]
+        }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const curso = cursos[id];
+
+    if (curso) {
+        document.getElementById("cursoTitulo").textContent = curso.titulo;
+        document.getElementById("cursoDescripcion").textContent = curso.descripcion;
+        const lista = document.getElementById("cursoContenido");
+        curso.contenido.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            lista.appendChild(li);
+        });
+    } else {
+        document.getElementById("cursoTitulo").textContent = "Curso no encontrado";
+    }
+
+    function irAEvaluacion() {
+        window.location.href = `evaluacion.html?id=${id}`;
+    }
+</script>
+</body>
+</html>
