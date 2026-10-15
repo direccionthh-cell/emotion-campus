@@ -8,96 +8,51 @@
 </head>
 <body>
 <div class="dashboard-wrapper">
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <img src="assets/images/images/logo-emotion.jpeg" alt="Emotion">
-            e-motion
-        </div>
-        <ul class="sidebar-menu">
-            <li><a href="dashboard.html">🏠 Dashboard</a></li>
-            <li><a href="#">📚 Academia</a></li>
-            <li><a href="cursos.html" class="active">📖 Cursos</a></li>
-            <li><a href="#">📊 Evaluaciones</a></li>
-            <li><a href="#">🎓 Certificados</a></li>
-            <li><a href="#">👥 Usuarios</a></li>
-            <li><a href="#">📈 Reportes</a></li>
-        </ul>
-        <button class="btn-emotion-outline" id="btnLogout">Cerrar sesión</button>
-    </aside>
+    <aside id="sidebar" data-activo="cursos"></aside>
     <main class="main-content">
         <div class="dashboard-header">
             <div>
                 <h1>Catálogo de Cursos</h1>
-                <p>Todos los módulos de capacitación disponibles</p>
+                <p>Todos los módulos de capacitación obligatorios</p>
             </div>
         </div>
-        <div class="courses-grid">
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=th'">
-                <div class="course-icon" style="background-color:#5D2F8A;">👤</div>
-                <h3>Talento Humano</h3>
-                <p>Procesos internos y políticas de personal.</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=calidad'">
-                <div class="course-icon" style="background-color:#F38B33;">✅</div>
-                <h3>Calidad</h3>
-                <p>Procesos y estándares de calidad de la empresa.</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=sst'">
-                <div class="course-icon" style="background-color:#34C759;">🦺</div>
-                <h3>SST</h3>
-                <p>Seguridad y Salud en el Trabajo.</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=etica'">
-                <div class="course-icon" style="background-color:#5D2F8A;">⚖️</div>
-                <h3>Ética y Transparencia</h3>
-                <p>Código de ética y Programa de Transparencia Empresarial (PTEE).</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=sarlaft'">
-                <div class="course-icon" style="background-color:#EF4444;">🛡️</div>
-                <h3>SARLAFT</h3>
-                <p>Sistema de Administración del Riesgo de LA/FT.</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=datos'">
-                <div class="course-icon" style="background-color:#F38B33;">🔒</div>
-                <h3>Protección de Datos</h3>
-                <p>Manejo responsable de datos personales (Ley 1581).</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=induccion'">
-                <div class="course-icon" style="background-color:#5D2F8A;">🎯</div>
-                <h3>Inducción Corporativa</h3>
-                <p>Bienvenida y primeros pasos para nuevos colaboradores.</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=acoso'">
-                <div class="course-icon" style="background-color:#EF4444;">🚫</div>
-                <h3>Prevención del Acoso Sexual</h3>
-                <p>Identificación, prevención y ruta de atención del acoso sexual laboral.</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
-            <div class="course-card" style="cursor:pointer" onclick="window.location.href='curso.html?id=vial'">
-                <div class="course-icon" style="background-color:#34C759;">🚗</div>
-                <h3>Seguridad Vial</h3>
-                <p>Normas de tránsito y prevención de accidentes viales.</p>
-                <span class="course-badge">Obligatorio</span>
-            </div>
+        <div class="filtros">
+            <button class="filtro activo" data-filtro="todos">Todos</button>
+            <button class="filtro" data-filtro="pendiente">Pendientes</button>
+            <button class="filtro" data-filtro="en-curso">En curso</button>
+            <button class="filtro" data-filtro="aprobado">Aprobados</button>
+            <input type="search" class="buscador" id="buscador" placeholder="🔍 Buscar curso...">
         </div>
+        <div class="courses-grid" id="grid"></div>
+        <p id="sinResultados" style="display:none;color:#888;">No hay cursos que coincidan.</p>
     </main>
 </div>
+<script src="js/datos.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/componentes.js"></script>
 <script>
-    if (localStorage.getItem("sesionActiva") !== "true") {
-        window.location.href = "index.html";
+    const grid = document.getElementById("grid");
+    ORDEN_CURSOS.forEach(id => grid.appendChild(tarjetaCurso(id)));
+
+    let filtro = "todos";
+    function aplicarFiltros() {
+        const texto = document.getElementById("buscador").value.trim().toLowerCase();
+        let visibles = 0;
+        grid.querySelectorAll(".course-card").forEach(card => {
+            const ok = (filtro === "todos" || card.dataset.estado === filtro) && card.dataset.texto.includes(texto);
+            card.style.display = ok ? "" : "none";
+            if (ok) visibles++;
+        });
+        document.getElementById("sinResultados").style.display = visibles ? "none" : "block";
     }
-    document.getElementById("btnLogout").addEventListener("click", () => {
-        localStorage.removeItem("sesionActiva");
-        localStorage.removeItem("usuarioEmail");
-        window.location.href = "index.html";
-    });
+
+    document.querySelectorAll(".filtro").forEach(btn => btn.addEventListener("click", () => {
+        document.querySelectorAll(".filtro").forEach(b => b.classList.remove("activo"));
+        btn.classList.add("activo");
+        filtro = btn.dataset.filtro;
+        aplicarFiltros();
+    }));
+    document.getElementById("buscador").addEventListener("input", aplicarFiltros);
 </script>
 </body>
 </html>

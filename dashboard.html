@@ -3,65 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Emotion Campus</title>
+    <title>Inicio - Emotion Campus</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="dashboard-wrapper">
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <img src="assets/images/images/logo-emotion.jpeg" alt="Emotion">
-            e-motion
-        </div>
-        <ul class="sidebar-menu">
-            <li><a href="dashboard.html" class="active">🏠 Dashboard</a></li>
-            <li><a href="#">📚 Academia</a></li>
-            <li><a href="cursos.html">📖 Cursos</a></li>
-            <li><a href="#">📊 Evaluaciones</a></li>
-            <li><a href="#">🎓 Certificados</a></li>
-            <li><a href="#">👥 Usuarios</a></li>
-            <li><a href="#">📈 Reportes</a></li>
-        </ul>
-        <button class="btn-emotion-outline" id="btnLogout">Cerrar sesión</button>
-    </aside>
+    <aside id="sidebar" data-activo="dashboard"></aside>
     <main class="main-content">
-        <div class="dashboard-header">
+        <section class="hero">
             <div>
-                <h1 id="saludoUsuario">¡Bienvenido!</h1>
-                <p>Este es el resumen general de Emotion Campus</p>
+                <h1 id="saludo">¡Hola!</h1>
+                <p id="resumen"></p>
+                <div class="barra"><span id="barraGeneral" style="width:0%"></span></div>
             </div>
-        </div>
+            <div class="hero-circulo" id="circulo"><span id="circuloTexto">0%</span></div>
+        </section>
+
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div><h2>185</h2><p>Usuarios activos</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📖</div>
-                <div><h2>7</h2><p>Módulos publicados</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div><h2>246</h2><p>Evaluaciones</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🎓</div>
-                <div><h2>162</h2><p>Certificados emitidos</p></div>
-            </div>
+            <div class="stat-card"><div class="stat-icon">📖</div><div><h2 id="statTotal">0</h2><p>Cursos obligatorios</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:var(--purple)">⏳</div><div><h2 id="statCurso">0</h2><p>En curso</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:var(--success)">✅</div><div><h2 id="statAprobados">0</h2><p>Aprobados</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#EF4444">📌</div><div><h2 id="statPendientes">0</h2><p>Pendientes</p></div></div>
         </div>
+
+        <h2 class="seccion-titulo" id="tituloSiguiente">Continúa donde quedaste</h2>
+        <div class="courses-grid" id="siguientes"></div>
     </main>
 </div>
+<script src="js/datos.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/componentes.js"></script>
 <script>
-    if (localStorage.getItem("sesionActiva") !== "true") {
-        window.location.href = "index.html";
+    const nombre = USUARIO_EMAIL.split("@")[0];
+    document.getElementById("saludo").textContent = `¡Hola, ${nombre}! 👋`;
+
+    const estados = ORDEN_CURSOS.map(estadoCurso);
+    const total = ORDEN_CURSOS.length;
+    const aprobados = estados.filter(e => e === "aprobado").length;
+    const enCurso = estados.filter(e => e === "en-curso").length;
+    const pendientes = total - aprobados - enCurso;
+    const pct = Math.round((aprobados / total) * 100);
+
+    document.getElementById("statTotal").textContent = total;
+    document.getElementById("statCurso").textContent = enCurso;
+    document.getElementById("statAprobados").textContent = aprobados;
+    document.getElementById("statPendientes").textContent = pendientes;
+    document.getElementById("circuloTexto").textContent = pct + "%";
+    document.getElementById("circulo").style.background =
+        `conic-gradient(var(--orange) ${pct * 3.6}deg, rgba(255,255,255,.25) 0)`;
+    document.getElementById("resumen").textContent = aprobados === total
+        ? "¡Completaste todos tus cursos obligatorios! 🎉"
+        : `Has aprobado ${aprobados} de ${total} cursos obligatorios. ¡Sigue así!`;
+    setTimeout(() => document.getElementById("barraGeneral").style.width = pct + "%", 100);
+
+    // Primero los cursos en curso, luego los pendientes (máximo 3)
+    const siguientes = [
+        ...ORDEN_CURSOS.filter(id => estadoCurso(id) === "en-curso"),
+        ...ORDEN_CURSOS.filter(id => estadoCurso(id) === "pendiente")
+    ].slice(0, 3);
+
+    const cont = document.getElementById("siguientes");
+    if (siguientes.length === 0) {
+        document.getElementById("tituloSiguiente").textContent = "Tus cursos";
+        cont.innerHTML = `<div class="course-detail-box">Ya aprobaste todo. Revisa tus notas en <a href="resultados.html">Mis resultados</a>.</div>`;
+    } else {
+        siguientes.forEach(id => cont.appendChild(tarjetaCurso(id)));
     }
-    const email = localStorage.getItem("usuarioEmail");
-    document.getElementById("saludoUsuario").textContent = `¡Bienvenido, ${email}!`;
-    document.getElementById("btnLogout").addEventListener("click", () => {
-        localStorage.removeItem("sesionActiva");
-        localStorage.removeItem("usuarioEmail");
-        window.location.href = "index.html";
-    });
 </script>
 </body>
 </html>

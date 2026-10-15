@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis resultados - Emotion Campus</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <aside id="sidebar" data-activo="evaluaciones"></aside>
+    <main class="main-content">
+        <div class="dashboard-header">
+            <div>
+                <h1>Mis resultados</h1>
+                <p>Estado de tus cursos obligatorios y tus notas</p>
+            </div>
+        </div>
+        <table class="tabla">
+            <thead><tr><th>Curso</th><th>Estado</th><th>Mejor nota</th><th>Intentos</th><th>Fecha de aprobación</th><th></th></tr></thead>
+            <tbody id="filas"></tbody>
+        </table>
+    </main>
+</div>
+<script src="js/datos.js"></script>
+<script src="js/layout.js"></script>
+<script>
+    document.getElementById("filas").innerHTML = ORDEN_CURSOS.map(id => {
+        const c = CURSOS[id];
+        const p = progresoCurso(id);
+        const estado = estadoCurso(id);
+        return `<tr>
+            <td>${c.icono} ${c.titulo}</td>
+            <td><span class="estado estado-${estado}">${ETIQUETA_ESTADO[estado]}</span></td>
+            <td>${p.porcentaje != null ? p.porcentaje + "%" : "—"}</td>
+            <td>${p.intentos}</td>
+            <td>${p.fecha || "—"}</td>
+            <td><a href="curso.html?id=${id}">${estado === "aprobado" ? "Repasar" : estado === "en-curso" ? "Continuar" : "Empezar"} →</a></td>
+        </tr>`;
+    }).join("");
+</script>
+</body>
+</html>
